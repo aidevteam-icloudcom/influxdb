@@ -117,8 +117,13 @@ impl<W: Wal, T: TimeProvider> WriteBufferImpl<W, T> {
         executor: Arc<iox_query::exec::Executor>,
     ) -> Result<Self> {
         let now = time_provider.now();
-        let loaded_state =
-            load_starting_state(Arc::clone(&persister), wal.clone(), now, segment_duration).await?;
+        let loaded_state = load_starting_state(
+            Arc::clone(&persister) as _,
+            wal.clone(),
+            now,
+            segment_duration,
+        )
+        .await?;
 
         let segment_state = Arc::new(RwLock::new(SegmentState::new(
             segment_duration,
@@ -402,6 +407,10 @@ impl<W: Wal, T: TimeProvider> Bufferer for WriteBufferImpl<W, T> {
 
     fn catalog(&self) -> Arc<Catalog> {
         self.catalog()
+    }
+
+    fn persister(&self) -> Arc<impl Persister> {
+        Arc::clone(&self.persister)
     }
 }
 
